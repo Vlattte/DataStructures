@@ -1,13 +1,20 @@
 #pragma once
+#include <cstdlib>
 
-// СЃС‚СЂР°С‚РµРіРёСЏ РёР·РјРµРЅРµРЅРёСЏ capacity
-enum class ResizeStrategy {
+enum class ResizeStrategy
+{
 	Additive,
 	Multiplicative
 };
 
-// С‚РёРї Р·РЅР°С‡РµРЅРёР№ РІ РІРµРєС‚РѕСЂРµ
-// РїРѕС‚РѕРј Р±СѓРґРµС‚ Р·Р°РјРµРЅРµРЅ РЅР° С€Р°Р±Р»РѕРЅ
+enum class SortedStrategy
+{
+	FromLittleToBig,
+	FromBigToLittle
+};
+
+//тип значений в векторе
+//потом будет заменен на шаблонный
 using ValueType = double;
 
 class MyVector
@@ -15,58 +22,66 @@ class MyVector
 public:
 	MyVector(size_t size = 0, ResizeStrategy = ResizeStrategy::Multiplicative, float coef = 1.5f);
 	MyVector(size_t size, ValueType value, ResizeStrategy = ResizeStrategy::Multiplicative, float coef = 1.5f);
-	
+
 	MyVector(const MyVector& copy);
 	MyVector& operator=(const MyVector& copy);
 
 	~MyVector();
 
-	// РґР»СЏ СѓРјРЅРµРЅСЊРєРёС… вЂ” СЂРµР°Р»РёР·РѕРІР°С‚СЊ РєРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ Рё РѕРїРµСЂР°С‚РѕСЂ РґР»СЏ РїРµСЂРµРјРµС‰РµРЅРёСЏ
-
 	size_t capacity() const;
 	size_t size() const;
 	float loadFactor();
 
-	// РґРѕСЃС‚СѓРї Рє СЌР»РµРјРµРЅС‚Сѓ, 
-	// РґРѕР»Р¶РµРЅ СЂР°Р±РѕС‚Р°С‚СЊ Р·Р° O(1)
-	ValueType& operator[](const size_t i);
-	const ValueType& operator[](const size_t i) const;
+	//доступ к элементу,
+	//должен работать за О(1)
+	ValueType& operator[](const size_t i) const;
 
-	// РґРѕР±Р°РІРёС‚СЊ РІ РєРѕРЅРµС†,
-	// РґРѕР»Р¶РµРЅ СЂР°Р±РѕС‚Р°С‚СЊ Р·Р° amort(O(1))
+	//добавить в конец,
+	//должен работать за amort(O(1))
 	void pushBack(const ValueType& value);
-	// РІСЃС‚Р°РІРёС‚СЊ,
-	// РґРѕР»Р¶РµРЅ СЂР°Р±РѕС‚Р°С‚СЊ Р·Р° O(n)
-	void insert(const size_t i, const ValueType& value);	// РІРµСЂСЃРёСЏ РґР»СЏ РѕРґРЅРѕРіРѕ Р·РЅР°С‡РµРЅРёСЏ
-	void insert(const size_t i, const MyVector& value);		// РІРµСЂСЃРёСЏ РґР»СЏ РІРµРєС‚РѕСЂР°
 
-	// СѓРґР°Р»РёС‚СЊ СЃ РєРѕРЅС†Р°,
-	// РґРѕР»Р¶РµРЅ СЂР°Р±РѕС‚Р°С‚СЊ Р·Р° amort(O(1))
+	//вставить,
+	//должен работать за О(n)
+	void insert(const size_t i, const ValueType& value);	//версия для одного значения
+	void insert(const size_t i, const MyVector& value);		//версия для вектора
+
+	//удалить с конца,
+	//должен работать за amort(O(1))
 	void popBack();
-	// СѓРґР°Р»РёС‚СЊ
-	// РґРѕР»Р¶РµРЅ СЂР°Р±РѕС‚Р°С‚СЊ Р·Р° O(n)
+
+	//удалить,
+	//должени работать за amort(O(1))
 	void erase(const size_t i);
-	void erase(const size_t i, const size_t len);			// СѓРґР°Р»РёС‚СЊ len СЌР»РµРјРµРЅС‚РѕРІ РЅР°С‡РёРЅР°СЏ СЃ i
+	void erase(const size_t i, const size_t len);	//удалить len элементов начиная с i
 
-	// РЅР°Р№С‚Рё СЌР»РµРјРµРЅС‚,
-	// РґРѕР»Р¶РµРЅ СЂР°Р±РѕС‚Р°С‚СЊ Р·Р° O(n)
-	// РµСЃР»Рё isBegin == true, РЅР°Р№С‚Рё РёРЅРґРµРєСЃ РїРµСЂРІРѕРіРѕ СЌР»РµРјРµРЅС‚Р°, СЂР°РІРЅРѕРіРѕ value, РёРЅР°С‡Рµ РїРѕСЃР»РµРґРЅРµРіРѕ
-	// РµСЃР»Рё РёСЃРєРѕРјРѕРіРѕ СЌР»РµРјРµРЅС‚Р° РЅРµС‚, РІРµСЂРЅСѓС‚СЊ -1
-	long long int find(const ValueType& value, bool isBegin = true) const;	
+	//найти элемент,
+	//должен работать за O(n)
+	//усли isBegin == true, найти индекс первого элемента, равного value, иначе последнего
+	//усли искомого элемента нет, вернуть -1
+	long long int find(const ValueType& value, bool isBegin = true) const;
 
-	// Р·Р°СЂРµР·РµСЂРІРёСЂРѕРІР°С‚СЊ РїР°РјСЏС‚СЊ (РїСЂРёРЅСѓРґРёС‚РµР»СЊРЅРѕ Р·Р°РґР°С‚СЊ capacity)
+	//зарезервировать память (принудительно задать capacity)
 	void reserve(const size_t capacity);
 
-	// РёР·РјРµРЅРёС‚СЊ СЂР°Р·РјРµСЂ
-	// РµСЃР»Рё РЅРѕРІС‹Р№ СЂР°Р·РјРµСЂ Р±РѕР»СЊС€Рµ С‚РµРєСѓС‰РµРіРѕ, С‚Рѕ РЅРѕРІС‹Рµ СЌР»РµРјРµРЅС‚С‹ Р·Р°Р±РёРІР°СЋС‚СЃСЏ РґРµС„РѕР»С‚РЅС‹РјРё Р·РЅР°С‡РµРЅРёСЏРјРё
-	// РµСЃР»Рё РјРµРЅСЊС€Рµ - РѕР±СЂРµР·Р°РµРј РІРµРєС‚РѕСЂ
-	void resize(const size_t size, const ValueType = 0.0);
+	//изменить размер
+	//если новый размер больше текущего, то новые элемнеты забиваются дефолтными значениями
+	//если меньше - обрезаем capacity
+	void resize(const size_t, const ValueType = 0.0);
 
-	// РѕС‡РёСЃС‚РєР° РІРµРєС‚РѕСЂР°, Р±РµР· РёР·РјРµРЅРµРЅРёСЏ capacity
+	//очистка вектора, без изменений
 	void clear();
+
+	ValueType* begin();
+	ValueType* end();
+
+	MyVector sortedSquares(const MyVector& vec, SortedStrategy strategy);
 private:
 	ValueType* _data;
-	size_t _size;
-	size_t _capacity;
+	size_t _size = 0;
+	size_t _capacity = 0;
+	float _coef = 1.5f;
+	ResizeStrategy _resizeStrategy;
+	size_t regulator = 0;
+	ValueType _defaultValue = 0;
 };
 
