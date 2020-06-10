@@ -20,6 +20,64 @@ using ValueType = double;
 class MyVector
 {
 public:
+
+	class Iterator
+	{
+	public:
+		Iterator(ValueType* ptr) 
+			: pointer(ptr)
+		{ }
+
+		Iterator operator+ (int n)
+		{
+			return Iterator(pointer + n);		//operator +
+		}
+
+		Iterator operator- (int n)
+		{
+			return Iterator(pointer - n);		//operator -
+		}
+
+		Iterator operator++ ()
+		{
+			return pointer++;					//operator ++
+		}
+
+		Iterator operator-- ()
+		{
+			return pointer--;					//operator --
+		}
+
+		Iterator operator++ (int)
+		{
+			return pointer++;					//operator ++ (int)
+		}
+
+		Iterator operator-- (int)
+		{
+			return pointer--;					//operator -- (int)
+		}
+
+		bool operator!= (const Iterator& it)
+		{
+			return pointer != it.pointer;		//operator !=
+		}
+
+		bool operator== (const Iterator& it)
+		{
+			return pointer == it.pointer;		//operator ==
+		}
+
+
+		ValueType& operator*() const
+		{
+			return *pointer;					//operator *
+		}
+	private:
+		ValueType* pointer;
+	};
+
+
 	MyVector(size_t size = 0, ResizeStrategy = ResizeStrategy::Multiplicative, float coef = 1.5f);
 	MyVector(size_t size, ValueType value, ResizeStrategy = ResizeStrategy::Multiplicative, float coef = 1.5f);
 
@@ -71,8 +129,25 @@ public:
 	//очистка вектора, без изменений
 	void clear();
 
-	ValueType* begin();
-	ValueType* end();
+	Iterator begin()
+	{
+		return Iterator(_data);
+	}
+
+	Iterator end()
+	{
+		return Iterator(_data + _size);
+	}
+
+	const ValueType* cbegin()
+	{
+		return _data;
+	}
+
+	const ValueType* cend()
+	{
+		return _data + _size;
+	}
 
 	MyVector sortedSquares(const MyVector& vec, SortedStrategy strategy);
 private:
@@ -82,6 +157,5 @@ private:
 	float _coef = 1.5f;
 	ResizeStrategy _resizeStrategy;
 	size_t regulator = 0;
-	ValueType _defaultValue = 0;
 };
 

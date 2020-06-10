@@ -1,6 +1,5 @@
 #include "MyVector.h"
 #include <iostream>
-#include <math.h>
 #include <cstdlib>
 #include <cmath>
 #include <exception>
@@ -11,15 +10,16 @@ MyVector::MyVector(size_t size, ResizeStrategy resizeStrategy, float coef)
 	:_size(size), _resizeStrategy(resizeStrategy), _coef(coef), _capacity(0)
 {
 	if (_size > _capacity)
-		resize(_size);
+		_capacity = _size + 1;
 	else
+	{
 		_capacity = 1;
-
-	_data = new ValueType[_capacity];
+		_data = new ValueType[_capacity];
+	}
 
 	for (size_t i = 0; i < _size; i++)
 	{
-		_data[i] = 0.0;
+		_data[i] = ValueType();
 	}
 
 	if (_size < 0)
@@ -29,18 +29,19 @@ MyVector::MyVector(size_t size, ResizeStrategy resizeStrategy, float coef)
 }
 
 MyVector::MyVector(size_t size, ValueType value, ResizeStrategy resizeStrategy, float coef)
-	:_size(size), _resizeStrategy(resizeStrategy), _coef(coef), _capacity(0), _defaultValue(value)
+	:_size(size), _resizeStrategy(resizeStrategy), _coef(coef), _capacity(0)
 {
 	if (_size > _capacity)
-		resize(_size);
+		_capacity = _size + 1;
 	else
+	{
 		_capacity = 1;
-
-	_data = new ValueType[_capacity];
+		_data = new ValueType[_capacity];
+	}
 
 	for (size_t i = 0; i < _size; i++)
 	{
-		_data[i] = _defaultValue;
+		_data[i] = value;
 	}
 
 	if (_size < 0)
@@ -55,7 +56,7 @@ MyVector::MyVector(const MyVector & copy)
 	_capacity = copy._capacity;
 	_resizeStrategy = copy._resizeStrategy;
 	_coef = copy._coef;
-
+		
 	_data = new ValueType[_capacity];
 	for (size_t i = 0; i < _size; ++i)
 	{
@@ -66,6 +67,11 @@ MyVector::MyVector(const MyVector & copy)
 
 MyVector& MyVector::operator=(const MyVector & copy)
 {
+	if (&copy == this)
+	{
+		return *this;
+	}
+
 	_size = copy._size;
 	_capacity = copy._capacity;
 	_resizeStrategy = copy._resizeStrategy;
@@ -163,14 +169,20 @@ void MyVector::erase(const size_t i)
 void MyVector::erase(const size_t i, const size_t len)
 {
 	size_t idx = i;
-
-	while (idx + len < _size)
+	if (idx + len < _size)
 	{
-		_data[idx] = _data[idx + len];
-		++idx;
+		while (idx + len < _size)
+		{
+			_data[idx] = _data[idx + len];			//[0, 1, 2, 3, 4, 5, 6, 7] len = 4 idx = 3
+			++idx;
+		}
+		resize(_size - len);
 	}
-
-	resize(_size - len);
+	else
+	{
+		resize(idx);
+	}
+	
 }
 
 long long int MyVector::find(const ValueType & value, bool isBegin) const
@@ -220,11 +232,7 @@ void MyVector::insert(const size_t i, const ValueType & value)
 
 	size_t oldSize = _size;
 	ValueType giver;
-	if (oldSize == 0)
-	{
-		reserve(1);
-	}
-
+	
 	if (i == 0) //если вставляем в начало
 	{
 		ValueType* buff = new ValueType[_size + 1];
@@ -237,15 +245,13 @@ void MyVector::insert(const size_t i, const ValueType & value)
 			buff[idx + 1] = giver;
 		}
 
-		//увеличиваем _data
-		resize(_size + 1);
+		//увеличиваем _data если не хвататет места
+		if (_capacity <= _size)
+			resize(_size + 1);
+		else
+			_size++;
 
-		//переносим старые значения и новый элемент в расширенную _data
-		for (size_t idx = 0; idx < _size; idx++)
-		{
-			giver = buff[idx];
-			_data[idx] = giver;
-		}
+		std::swap(_data, buff);
 
 		//чистим буфер
 		delete[] buff;
@@ -263,13 +269,6 @@ void MyVector::insert(const size_t i, const ValueType & value)
 	{
 		ValueType* buff = new ValueType[_size + 1];
 
-		//переносим все элементы от i до конца в буфер
-		for (size_t idx = i; idx < _size; idx++)
-		{
-			giver = _data[idx];
-			buff[idx + 1] = giver;
-		}
-
 		//переносим все элементы с начала до i в буфер
 		for (size_t idx = 0; idx < i; idx++)
 		{
@@ -277,15 +276,17 @@ void MyVector::insert(const size_t i, const ValueType & value)
 			buff[idx] = giver;
 		}
 
+		//переносим все элементы от i до конца в буфер
+		for (size_t idx = i; idx < _size; idx++)
+		{
+			giver = _data[idx];
+			buff[idx + 1] = giver;
+		}
+
 		buff[i] = value;   //вставляем новый элемент
 		resize(_size + 1); //расширяем _data
 
-		//переносим из буфера в _data
-		for (size_t idx = 0; idx < _size; idx++)
-		{
-			giver = buff[idx];
-			_data[idx] = giver;
-		}
+		std::swap(_data, buff);
 
 		delete[] buff;
 		buff = nullptr;
@@ -295,14 +296,14 @@ void MyVector::insert(const size_t i, const ValueType & value)
 
 void MyVector::insert(const size_t i, const MyVector & value)
 {
-	resize(_size + value._size);
-	for (size_t idx = _size; idx >= i + value._size; idx--) 
-	{														
-		_data[idx] = _data[idx - value._size];
-	}
+	if (_capacity < _size + value._size);
+		resize(_size + value._size);
 
-	for (size_t idx = i, n = 0; idx < i + value._size; idx++, n++)
+	size_t size = value._size;
+
+	for (size_t idx = i, n = 0; n < size; idx++, n++)
 	{
+		_data[idx + size] = _data[idx];
 		_data[idx] = value._data[n];
 	}
 }
@@ -318,85 +319,84 @@ void MyVector::reserve(const size_t capacity)
 			buff[i] = giver;						    //переносим старые значения
 		}
 
-		delete[] _data;                                 //освобождаем старую память
 		_data = nullptr;
 		_data = buff;
 		_capacity = capacity;
-		/*		                        
-		_data = new ValueType[capacity];                //выделяем новую память новой длины
-
-		for (size_t i = 0; i < _size; ++i)
-		{
-			giver = buff[i];
-			_data[i] = giver;	                        //возвращаем старые элементы на свои места
-		}
-		*/
 }
 
 void MyVector::resize(const size_t size, const ValueType value)
 {
-	size_t oldSize = _size;
-	_size = size;
-
-	// считаем capacity по формуле Multiplicative
-	if (_resizeStrategy == ResizeStrategy::Multiplicative) 
+	if (size > _size)
 	{
-		while (_capacity < _size)
+		if (size > _capacity)
 		{
-			if (loadFactor() > 1)
-				_capacity = ceil(_capacity * _coef);
-			else if (loadFactor() < 1)
-				_capacity = ceil(_capacity * loadFactor());
-			else if (loadFactor() == 1)
-				_capacity = _capacity;
+			reserve(size);
 		}
-	}	
-	// считаем capacity по формуле Additive
-	else if (_resizeStrategy == ResizeStrategy::Additive) 
-	{
-		while (_capacity < _size)
+		
+		for (size_t idx = _size; idx < size; idx++)
 		{
-			if (_capacity > _size)
-				_capacity = _size;
-			else if (_capacity < _size)
-				while (_capacity >= _size)
-				{
-					_capacity = _capacity + 1;
-				}
+			_data[idx] = value;
+		}
+
+		_size = size;
+		if (loadFactor() >= 1)
+		{
+			if (_resizeStrategy == ResizeStrategy::Multiplicative)
+			{
+				reserve(ceil(_coef * _capacity));
+			}
+			else if (_resizeStrategy == ResizeStrategy::Additive)
+			{
+				reserve(ceil(_capacity + _coef));
+			}
 		}
 	}
-	if (oldSize != 0)
+	else if (size < _size)
 	{
-		reserve(_capacity); // резервируем память для вектора
+		ValueType* buf = new ValueType[size];
+		for (size_t idx = 0; idx < size; idx++)
+		{
+			buf[idx] = _data[idx];
+		}
+
+		std::swap(_data, buf);
+		delete[] buf;
+		_size = size;
+		_capacity = _size;
+
+		if (loadFactor() >= 1)
+		{
+			if (_resizeStrategy == ResizeStrategy::Multiplicative)
+			{
+				reserve(ceil(_coef * _capacity));
+			}
+			else if (_resizeStrategy == ResizeStrategy::Additive)
+			{
+				reserve(ceil(_capacity + _coef));
+			}
+		}
 	}
-	else if (oldSize == 0)
+	else
 	{
-		_data = new ValueType[_capacity];
+		if (_resizeStrategy == ResizeStrategy::Multiplicative)
+		{
+			reserve(ceil(_coef * _capacity));
+		}
+		else if (_resizeStrategy == ResizeStrategy::Additive)
+		{
+			reserve(ceil(_capacity + _coef));
+		}
 	}
 
-	for (size_t i = oldSize; i < _capacity; ++i)
-	{
-		_data[i] = _defaultValue; // заполняем новое место дефолтными значениями
-	}
 }
 
 void MyVector::clear()
 {
 	for (size_t i = 0; i < _size; i++)
 	{
-		_data[i] = _defaultValue;
+		_data[i] = ValueType();
 	}
 	_size = 0;
-}
-
-ValueType* MyVector::begin()
-{
-	return _data;
-}
-
-ValueType* MyVector::end()
-{
-	return _data + _size;
 }
 
 MyVector MyVector::sortedSquares(const MyVector& vec, SortedStrategy strategy)
