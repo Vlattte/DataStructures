@@ -9,11 +9,19 @@
 MyVector::MyVector(size_t size, ResizeStrategy resizeStrategy, float coef)
 	:_size(size), _resizeStrategy(resizeStrategy), _coef(coef), _capacity(0)
 {
-	if (_size > _capacity)
-		_capacity = _size + 1;
-	else
+	if (_size == 0)
 	{
 		_capacity = 1;
+		_data = new ValueType[_capacity];
+	}
+	else if (_resizeStrategy == ResizeStrategy::Additive)
+	{
+		_capacity = ceil(_size + _coef);
+		_data = new ValueType[_capacity];
+	}
+	else if (_resizeStrategy == ResizeStrategy::Multiplicative)
+	{
+		_capacity = ceil(_size * _coef);
 		_data = new ValueType[_capacity];
 	}
 
@@ -31,11 +39,19 @@ MyVector::MyVector(size_t size, ResizeStrategy resizeStrategy, float coef)
 MyVector::MyVector(size_t size, ValueType value, ResizeStrategy resizeStrategy, float coef)
 	:_size(size), _resizeStrategy(resizeStrategy), _coef(coef), _capacity(0)
 {
-	if (_size > _capacity)
-		_capacity = _size + 1;
-	else
+	if (_size == 0)
 	{
 		_capacity = 1;
+		_data = new ValueType[_capacity];
+	}
+	else if (_resizeStrategy == ResizeStrategy::Additive)
+	{
+		_capacity = ceil(_size + _coef);
+		_data = new ValueType[_capacity];
+	}
+	else if (_resizeStrategy == ResizeStrategy::Multiplicative)
+	{
+		_capacity = ceil(_size * _coef);
 		_data = new ValueType[_capacity];
 	}
 
@@ -88,7 +104,13 @@ MyVector& MyVector::operator=(const MyVector & copy)
 
 MyVector::~MyVector()
 {
-	delete[] _data;
+	if (_data)
+	{
+		delete[] _data;
+		_data = nullptr;
+	}
+	_size = 0;
+	_capacity = 0;
 }
 
 size_t MyVector::capacity() const
@@ -173,7 +195,7 @@ void MyVector::erase(const size_t i, const size_t len)
 	{
 		while (idx + len < _size)
 		{
-			_data[idx] = _data[idx + len];			//[0, 1, 2, 3, 4, 5, 6, 7] len = 4 idx = 3
+			_data[idx] = _data[idx + len];			//[0, 1, 2, 3, 4, 5, 6, 7] len = 2 idx = 3
 			++idx;
 		}
 		resize(_size - len);
@@ -181,6 +203,10 @@ void MyVector::erase(const size_t i, const size_t len)
 	else
 	{
 		resize(idx);
+	}
+	if (_capacity == 0)
+	{
+		reserve(1);
 	}
 	
 }
