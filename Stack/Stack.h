@@ -1,53 +1,52 @@
 #pragma once
-// РЈСЂРѕРІРµРЅСЊ Р°Р±СЃС‚СЂР°РєС†РёРё
-// РєР»РёРµРЅС‚СЃРєРёР№ РєРѕРґ РїРѕРґРєР»СЋС‡Р°РµС‚ РёРјРµРЅРЅРѕ СЌС‚РѕС‚ С…РµРґРµСЂ
+#include <cstdlib>
+// Уровень абстракции
+// клиентский код подключает именно этот хедер
 
-// С‚РёРї Р·РЅР°С‡РµРЅРёР№ РІ СЃС‚РµРєРµ
+// тип значений в стеке
 using ValueType = double;
 
-// РЅР° РѕСЃРЅРѕРІРµ РєР°РєРѕРіРѕ РєРѕРЅС‚РµР№РЅРµСЂР° СЂР°Р±РѕС‚Р°РµС‚ СЃС‚РµРє
+// на основе какого контейнера работает стек
 enum class StackContainer {
 	Vector = 0,
-	List,
-	// РјРѕР¶РЅРѕ РґРѕРїРѕР»РЅСЏС‚СЊ РґСЂСѓРіРёРјРё РєРѕРЅС‚РµР№РЅРµСЂР°РјРё
+	List = 1,
+	// можно дополнять другими контейнерами
 };
 
-// РґРµРєР»Р°СЂР°С†РёСЏ РєР»Р°СЃСЃР° СЃ СЂРµР°Р»РёР·Р°С†РёРµР№
+// декларация класса с реализацией
 class StackImplementation;
 
 class Stack
 {
 public:
-	// Р‘РѕР»СЊС€Р°СЏ РїСЏС‚РµСЂРєР°
+	// Большая пятерка
 	Stack(StackContainer container = StackContainer::Vector);
-	// СЌР»РµРјРµРЅС‚С‹ РјР°СЃСЃРёРІР° РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕ РїРѕРґРєР»Р°РґС‹РІР°СЋС‚СЃСЏ РІ СЃС‚РµРє
-	Stack(const ValueType* valueArray, const size_t arraySize, 
-		  StackContainer container = StackContainer::Vector);
+	// элементы массива последовательно подкладываются в стек
+	Stack
+	(const ValueType* valueArray, const size_t arraySize, StackContainer container = StackContainer::Vector);
 
 	explicit Stack(const Stack& copyStack);
 	Stack& operator=(const Stack& copyStack);
 
-	// Р—РґРµСЃСЊ РєР°Рє РѕР±С‹С‡РЅРѕ
+	// Здесь как обычно
 	// Stack(Stack&& moveStack) noexcept;
 	// Stack& operator=(Stack&& moveStack) noexcept;
 
 	~Stack();
 
-	// РґРѕР±Р°РІР»РµРЅРёРµ РІ С…РІРѕСЃС‚
+	// добавление в хвост
 	void push(const ValueType& value);
-	// СѓРґР°Р»РµРЅРёРµ СЃ С…РІРѕСЃС‚Р°
+	// удаление с хвоста
 	void pop();
-	// РїРѕСЃРјРѕС‚СЂРµС‚СЊ СЌР»РµРјРµРЅС‚ РІ С…РІРѕСЃС‚Рµ
-	ValueType& top();
+	// посмотреть элемент в хвосте
 	const ValueType& top() const;
-	// РїСЂРѕРІРµСЂРєР° РЅР° РїСѓСЃС‚РѕС‚Сѓ
+	// проверка на пустоту
 	bool isEmpty() const;
-	// СЂР°Р·РјРµСЂ 
+	// размер 
 	size_t size() const;
 private:
-	// СѓРєР°Р·Р°С‚РµР»СЊ РЅР° РёРјРїР»РµРјРµРЅС‚Р°С†РёСЋ (СѓСЂРѕРІРµРЅСЊ СЂРµР°Р»РёР·Р°С†РёРё)
+	// указатель на имплементацию (уровень реализации)
 	StackImplementation* _pimpl = nullptr;
-	// С‚РёРї РєРѕРЅС‚РµР№РЅРµСЂР°, РЅР°РІРµСЂРЅСЏРєР° РїРѕРЅР°РґРѕР±РёС‚СЃСЏ
+	// тип контейнера, наверняка понадобится
 	StackContainer _containerType;
 };
-

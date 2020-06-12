@@ -4,6 +4,7 @@
 #include "StackImplementation.h"
 
 #include <stdexcept>
+#include <cstdlib>
 
 Stack::Stack(StackContainer container)
 	: _containerType(container)
@@ -11,41 +12,95 @@ Stack::Stack(StackContainer container)
 	switch (container)
 	{
 	case StackContainer::List: {
-		_pimpl = new ListStack();	// РєРѕРЅРєСЂРµС‚РёР·РёСЂСѓР№С‚Рµ РїРѕРґ РІР°С€Рё РєРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹, РµСЃР»Рё РЅР°РґРѕ
+		_pimpl = new ListStack();			// конкретизируйте под ваши конструкторы, если надо
 		break;
 	}
 	case StackContainer::Vector: {
-		_pimpl = new VectorStack();	// РєРѕРЅРєСЂРµС‚РёР·РёСЂСѓР№С‚Рµ РїРѕРґ РІР°С€Рё РєРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹, РµСЃР»Рё РЅР°РґРѕ
+		_pimpl = new VectorStack();			// конкретизируйте под ваши конструкторы, если надо
 		break;
 	}
 	default:
-		throw std::runtime_error("РќРµРёР·РІРµСЃС‚РЅС‹Р№ С‚РёРї РєРѕРЅС‚РµР№РЅРµСЂР°");
+		throw std::runtime_error("Неизвестный тип контейнера");
 	}
 }
 
 Stack::Stack(const ValueType* valueArray, const size_t arraySize, StackContainer container)
+	: _containerType(container)
 {
-	// РїСЂРёРЅС†РёРї С‚РѕС‚ Р¶Рµ, С‡С‚Рѕ Рё РІ РїСЂРѕС€Р»РѕРј РєРѕРЅСЃС‚СЂСѓРєС‚РѕСЂРµ
+	switch (container)
+	{
+	case StackContainer::List: {
+		_pimpl = new ListStack();			// конкретизируйте под ваши конструкторы, если надо
+		break;
+	}
+	case StackContainer::Vector: {
+		_pimpl = new VectorStack();			// конкретизируйте под ваши конструкторы, если надо
+		break;
+	}
+	default:
+		throw std::runtime_error("Неизвестный тип контейнера");
+	}
+
+	for (size_t i = 0; i < arraySize; i++)
+	{
+		_pimpl->push(valueArray[i]);
+	}
 }
 
 Stack::Stack(const Stack& copyStack)
+	:_containerType(copyStack._containerType)
 {
-	// СЃР°РјРё
+	switch (_containerType)
+	{
+	case StackContainer::List: {
+		_pimpl = new ListStack(*static_cast<ListStack*>(copyStack._pimpl));	// конкретизируйте под ваши конструкторы, если надо
+		break;
+	}
+	case StackContainer::Vector: {
+		_pimpl = new VectorStack(*(static_cast<VectorStack*>(copyStack._pimpl)));	// конкретизируйте под ваши конструкторы, если надо
+		break;
+	}
+	default:
+		throw std::runtime_error("Неизвестный тип контейнера");
+	}
 }
 
 Stack& Stack::operator=(const Stack& copyStack)
 {
-	// TODO: РІСЃС‚Р°РІСЊС‚Рµ Р·РґРµСЃСЊ РѕРїРµСЂР°С‚РѕСЂ return
+	if (&this->_pimpl == &copyStack._pimpl)
+	{
+		return *this;
+	}
+	else
+	{
+		delete _pimpl;
+		_containerType = copyStack._containerType;
+
+		switch (_containerType)
+		{
+		case StackContainer::List: {
+			_pimpl = new ListStack(*static_cast<ListStack*>(copyStack._pimpl));	// конкретизируйте под ваши конструкторы, если надо
+			break;
+		}
+		case StackContainer::Vector: {
+			_pimpl = new VectorStack(*(static_cast<VectorStack*>(copyStack._pimpl)));	// конкретизируйте под ваши конструкторы, если надо
+			break;
+		}
+		default:
+			throw std::runtime_error("Неизвестный тип контейнера");
+		}
+		return *this;
+	}
 }
 
 Stack::~Stack()
 {
-	delete _pimpl;		// РєРѕРјРїРѕР·РёС†РёСЏ!
+	delete _pimpl;		// композиция!
 }
 
 void Stack::push(const ValueType& value)
 {
-	// РјРѕР¶РЅРѕ, С‚.Рє. push РѕРїСЂРµРґРµР»РµРЅ РІ РёРЅС‚РµСЂС„РµР№СЃРµ
+	// можно, т.к. push определен в интерфейсе
 	_pimpl->push(value);
 }
 
@@ -54,12 +109,7 @@ void Stack::pop()
 	_pimpl->pop();
 }
 
-ValueType& Stack::top()
-{
-	return _pimpl->top();
-}
-
-const ValueType& Stack::top() const
+const ValueType& Stack::top() const 
 {
 	return _pimpl->top();
 }
@@ -71,5 +121,6 @@ bool Stack::isEmpty() const
 
 size_t Stack::size() const
 {
-	return _pimpl->isEmpty();
+	return _pimpl->size();
 }
+
