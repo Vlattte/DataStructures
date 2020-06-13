@@ -3,6 +3,13 @@
 
 #include <cstdlib>
 
+VectorStack::VectorStack()
+{ };
+
+VectorStack::VectorStack(const VectorStack& vec)
+	:MyVector(vec) 
+{ }
+
 
 void VectorStack::push(const ValueType& value)
 {

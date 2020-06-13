@@ -2,6 +2,7 @@
 
 #include <cassert>
 #include <iostream>
+#include <cstdlib>
 
 using ValueType = double;
 

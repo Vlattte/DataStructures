@@ -11,10 +11,8 @@
 class VectorStack : public StackImplementation, public MyVector
 {
 public:
-	VectorStack() {};
-
-	VectorStack(VectorStack& vec)
-		:MyVector(vec) { }
+	VectorStack();
+	VectorStack(const VectorStack& vec);
 
 	void push(const ValueType& value);
 	void pop();

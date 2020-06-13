@@ -46,6 +46,10 @@ LinkedList::LinkedList(const LinkedList & copyList)
 		this->_head = nullptr;
 		return;
 	}
+	else
+	{
+		this->_head = new Node(copyList._head->value);
+	}
 
 	//выделяем память и копируем голову	this->_head = new Node(copyList._head->value);
 	Node* currentNode = this->_head;

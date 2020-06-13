@@ -53,7 +53,7 @@ Stack::Stack(const Stack& copyStack)
 	switch (_containerType)
 	{
 	case StackContainer::List: {
-		_pimpl = new ListStack(*static_cast<ListStack*>(copyStack._pimpl));	// конкретизируйте под ваши конструкторы, если надо
+		_pimpl = new ListStack(*(static_cast<ListStack*>(copyStack._pimpl)));	// конкретизируйте под ваши конструкторы, если надо
 		break;
 	}
 	case StackContainer::Vector: {

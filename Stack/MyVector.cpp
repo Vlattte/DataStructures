@@ -79,7 +79,6 @@ MyVector::MyVector(const MyVector & copy)
 	{
 		_data[i] = copy._data[i];
 	}
-
 }
 
 MyVector& MyVector::operator=(const MyVector & copy)
@@ -158,7 +157,7 @@ void MyVector::pushBack(const ValueType & value)
 	else
 	{
 		resize(_size + 1);
-		_data[_size] = value;
+		_data[_size - 1] = value;
 	}
 }
 
