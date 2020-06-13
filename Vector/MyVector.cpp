@@ -72,13 +72,13 @@ MyVector::MyVector(const MyVector & copy)
 	_capacity = copy._capacity;
 	_resizeStrategy = copy._resizeStrategy;
 	_coef = copy._coef;
+	regulator = copy.regulator;
 		
 	_data = new ValueType[_capacity];
 	for (size_t i = 0; i < _size; ++i)
 	{
 		_data[i] = copy._data[i];
 	}
-
 }
 
 MyVector& MyVector::operator=(const MyVector & copy)
@@ -92,6 +92,7 @@ MyVector& MyVector::operator=(const MyVector & copy)
 	_capacity = copy._capacity;
 	_resizeStrategy = copy._resizeStrategy;
 	_coef = copy._coef;
+	regulator = copy.regulator;
 
 	_data = new ValueType[_capacity];
 	for (size_t i = 0; i < _size; ++i)
@@ -156,7 +157,7 @@ void MyVector::pushBack(const ValueType & value)
 	else
 	{
 		resize(_size + 1);
-		_data[_size] = value;
+		_data[_size - 1] = value;
 	}
 }
 
